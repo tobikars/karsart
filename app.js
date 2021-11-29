@@ -5,7 +5,7 @@ const morgan = require('morgan')
 const winston = require('winston')
 require('winston-syslog').Syslog
 
-const LOG_PATH = 'logs/app.log'
+const LOG_PATH = 'logs/app_log'
 
 const logger = winston.createLogger({
   levels: winston.config.syslog.levels,
