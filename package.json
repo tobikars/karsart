@@ -11,7 +11,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "PORT=3000 nodemon server.js"
+    "start": "PORT=3000 nodemon server.js",
+    "install_app": "npm install --scripts-prepend-node-path"
   },
   "repository": {
     "type": "git",
