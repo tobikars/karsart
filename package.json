@@ -4,11 +4,14 @@
   "description": "Art of Rob Kars",
   "main": "app.js",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "morgan": "^1.10.0",
+    "winston": "^3.3.3",
+    "winston-syslog": "^2.4.4"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "PORT=3000 node server.js"
+    "start": "PORT=3000 nodemon server.js"
   },
   "repository": {
     "type": "git",
