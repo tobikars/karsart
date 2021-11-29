@@ -22,7 +22,6 @@ function createAppLogger() {
   return createLogger({
     level: 'info',
     format: combine(
-      colorize(),
       timestamp(),
       printf((info) => {
         return `[${info.timestamp}] [${info.level}] : ${JSON.stringify(info.message)}`
