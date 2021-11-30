@@ -40,7 +40,7 @@ const console = createAppLogger()
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello World!' })
+  res.json({ message: 'Hello World 100!' })
   console.info('just a request to root.')
 })
 
