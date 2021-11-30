@@ -5,7 +5,7 @@
 </head>
 <body>
     <script type="text/javascript">
-        var myWebSocket = new WebSocket("ws://tobicup.com:9090");
+        var myWebSocket = new WebSocket("wss://tobicup.com:9090");
         myWebSocket.onmessage = function(evt) {
             console.log("Some event was posted");
             console.debug(evt);

@@ -94,7 +94,7 @@ app.get('/error_500', (req, res) => {
 
 app.get('/error_400', (req, res) => {
   res.status(400).send({ message: 'Bad request' })
-  console.warning('bad request')
+  console.info('bad request')
 })
 
 module.exports = app
