@@ -49,6 +49,10 @@ let appStatus = {
   requests_handled: 0,
 }
 
+process.on('uncaughtException', (err) => {
+  logger.error(err)
+})
+
 console.log('starting')
 // serve static files from the public folder
 app.use(express.static(PUBLIC_DIR))
