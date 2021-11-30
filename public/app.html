@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>test app</title>
+
+</head>
+<body>
+    <script type="text/javascript">
+        var myWebSocket = new WebSocket("ws://localhost:9090");
+        myWebSocket.onmessage = function(evt) {
+            console.log("Some event was posted");
+            console.debug(evt);
+        };
+    </script>
+<h1>Test App</h1>
+<p>to test websockets and REST API</p>
+
+
+</body>
+</html>

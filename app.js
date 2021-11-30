@@ -9,6 +9,12 @@ const { createLogger, format } = winston
 
 const LOG_PATH = 'logs/app_log'
 
+const PUBLIC_DIR = path.join(__dirname, 'public')
+const SEMVER = fs.readFileSync(path.join(PUBLIC_DIR, '.semver')).toString().trim()
+
+const WebSocketServer = require('ws').Server
+const wss = new WebSocketServer({ port: 9090 })
+
 const app = express()
 
 // setup the logger
@@ -18,7 +24,6 @@ app.use(morgan('combined', { stream: accessLogStream }))
 
 function createAppLogger() {
   const { combine, timestamp, printf, colorize } = format
-
   return createLogger({
     level: 'info',
     format: combine(
@@ -33,15 +38,53 @@ function createAppLogger() {
     ],
   })
 }
-
 const console = createAppLogger()
 
+let appStatus = {
+  version: SEMVER,
+  load_time: Date(),
+  requests_handled: 0,
+}
+
+appStatus.semver = app.on('listening', function () {
+  appStatus.start_time = Date()
+})
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    appStatus[`${req.method}_requests`]
+      ? appStatus[`${req.method}_requests`]++
+      : (appStatus[`${req.method}_requests`] = 1)
+
+    appStatus[`${res.statusCode}_status`]
+      ? appStatus[`${res.statusCode}_status`]++
+      : (appStatus[`${res.statusCode}_status`] = 1)
+
+    appStatus.requests_handled++
+  })
+  next()
+})
+
 // serve static files from the public folder
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(PUBLIC_DIR))
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello World 100!' })
+  res.json({ message: `Hello World ${SEMVER}` })
   console.info('just a request to root.')
+})
+
+app.get('/msg/:msg', (req, res) => {
+  const msg = req.params.msg
+  console.info(req.params)
+  wss.clients.forEach(function each(client) {
+    client.send('broadcast: ' + msg)
+  })
+
+  res.json({ sent: msg })
+})
+
+app.get('/status', (req, res) => {
+  res.json(appStatus)
 })
 
 app.get('/error_500', (req, res) => {
