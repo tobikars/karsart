@@ -7,7 +7,9 @@ const winston = require('winston')
 
 const { createLogger, format } = winston
 
-const LOG_PATH = 'logs/app_log'
+const COMBINED = path.join(__dirname, 'logs/access_log')
+const INFO = path.join(__dirname, 'logs/info_log')
+const ERROR = path.join(__dirname, 'logs/error_log')
 
 const PUBLIC_DIR = path.join(__dirname, 'public')
 const SEMVER = fs.readFileSync(path.join(PUBLIC_DIR, '.semver')).toString().trim()
@@ -19,26 +21,27 @@ const app = express()
 
 // setup the logger
 // create a write stream (in append mode)
-const accessLogStream = fs.createWriteStream(path.join(__dirname, LOG_PATH), { flags: 'a' })
+const accessLogStream = fs.createWriteStream(COMBINED, { flags: 'a' })
 app.use(morgan('combined', { stream: accessLogStream }))
 
 function createAppLogger() {
-  const { combine, timestamp, printf, colorize } = format
+  const { combine, timestamp, printf } = format
+  console.log('creating logger')
   return createLogger({
     level: 'info',
     format: combine(
       timestamp(),
       printf((info) => {
-        return `[${info.timestamp}] [${info.level}] : ${JSON.stringify(info.message)}`
+        return `[${info.timestamp}] [${info.level}] ${JSON.stringify(info.message)}`
       })
     ),
     transports: [
-      new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-      new winston.transports.File({ filename: 'logs/combined.log' }),
+      new winston.transports.File({ filename: ERROR, level: 'error' }),
+      new winston.transports.File({ filename: INFO }),
     ],
   })
 }
-const console = createAppLogger()
+const logger = createAppLogger()
 
 let appStatus = {
   version: SEMVER,
@@ -46,9 +49,15 @@ let appStatus = {
   requests_handled: 0,
 }
 
-appStatus.semver = app.on('listening', function () {
+console.log('starting')
+// serve static files from the public folder
+app.use(express.static(PUBLIC_DIR))
+
+app.listeningHandler = () => {
   appStatus.start_time = Date()
-})
+  logger.info(`server started on ${appStatus.start_time}`)
+  console.log('server listening...')
+}
 
 app.use((req, res, next) => {
   res.on('finish', () => {
@@ -65,12 +74,9 @@ app.use((req, res, next) => {
   next()
 })
 
-// serve static files from the public folder
-app.use(express.static(PUBLIC_DIR))
-
 app.get('/', (req, res) => {
   res.json({ message: `Hello World ${SEMVER}` })
-  console.info('just a request to root.')
+  logger.info('just a request to root.')
 })
 
 app.get('/msg/:msg', (req, res) => {
@@ -89,12 +95,12 @@ app.get('/status', (req, res) => {
 
 app.get('/error_500', (req, res) => {
   res.status(500).send({ message: 'Server error' })
-  console.error('internal server error')
+  logger.error('internal server error')
 })
 
 app.get('/error_400', (req, res) => {
   res.status(400).send({ message: 'Bad request' })
-  console.info('bad request')
+  logger.info('bad request')
 })
 
 module.exports = app
